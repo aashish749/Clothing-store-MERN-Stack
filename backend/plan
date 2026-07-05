@@ -1,0 +1,362 @@
+# Plan: Node.js + Express Ecommerce Backend
+
+## TL;DR
+
+Build a full-featured ecommerce backend using Node.js + Express + MongoDB. Scope: small scale (< 1K products). Features: user auth, product catalog with search, shopping cart, checkout, payment processing, order management, inventory tracking, admin APIs, and email notifications. Timeline: 1-2 weeks using structured modules and clear separation of concerns.
+
+## Complete Feature List
+
+### 1. **User Management**
+
+- User registration (email/password)
+- User login & JWT authentication
+- Profile management (update address, phone, etc.)
+- Password reset via email token
+- User roles (customer, admin)
+
+### 2. **Product Catalog**
+
+- CRUD operations for products (admin only)
+- Product listing with pagination
+- Search by name/category/price range
+- Product filtering (category, rating, price)
+- Product details (images, description, specs, reviews)
+- Category management
+
+### 3. **Shopping Cart**
+
+- Add/remove items from cart
+- Update cart quantities
+- Persist cart (to DB or session)
+- Calculate subtotal, tax, shipping
+
+### 4. **Checkout & Orders**
+
+- Checkout flow with shipping address (validate inventory, apply discounts/coupons)
+- Order creation from cart
+- Order status tracking (pending, confirmed, shipped, delivered)
+- Order history for users
+- Admin order management (view, update status)
+
+### 5. **Payment Processing**
+
+- Stripe integration
+- Payment validation
+- Transaction logging
+
+### 6. **Inventory Tracking**
+
+- Stock levels per product
+- Automatic stock reduction on purchase
+- Low stock alerts (admin)
+- Stock availability checks during checkout
+
+### 7. **Reviews & Ratings**
+
+- Users can leave reviews/ratings on products
+- Rating aggregation (avg rating, count)
+- Admin can moderate reviews
+
+### 8. **Admin Dashboard APIs**
+
+- Sales analytics (revenue, top products)
+- User management (view, ban, etc.)
+- Product analytics
+- Order fulfillment endpoints
+
+### 9. **Notifications**
+
+- Email on order confirmation
+- Email on order shipment
+- Email on password reset
+
+---
+
+## Implementation Steps (9 Phases)
+
+### **Phase 1: Project Setup & Core Infrastructure** (Days 1-2)
+
+1. Initialize Node.js project with Express
+   - `npm init`, install dependencies (express, mongoose, dotenv, bcryptjs, jsonwebtoken, cors)
+2. Set up folder structure: `models/`, `routes/`, `controllers/`, `middleware/`, `utils/`, `config/`
+3. Connect to MongoDB (local or Atlas)
+4. Create environment configuration (.env)
+5. Set up error handling middleware
+6. Set up CORS and request logging middleware
+
+### **Phase 2: Authentication & User Management** (Days 2-3)
+
+1. Create User model (email, password, role, profile data)
+2. Implement password hashing (bcryptjs)
+3. Create JWT authentication middleware
+4. Build auth routes:
+   - POST `/auth/register`
+   - POST `/auth/login`
+   - POST `/auth/forgot-password`
+   - POST `/auth/reset-password`
+5. Create user routes:
+   - GET `/users/profile`
+   - PUT `/users/profile`
+   - GET `/users/{id}` (admin)
+
+### **Phase 3: Product & Category Management** (Days 3-4)
+
+1. Create Product model (name, description, price, category, stock, images, ratings, reviews)
+2. Create Category model (name, description)
+3. Build product routes:
+   - POST `/products` (admin only)
+   - GET `/products` (with pagination & filtering and search)
+   - GET `/products/{id}`
+   - PUT `/products/{id}` (admin only) (upadate product)
+   - DELETE `/products/{id}` (admin only) (delte product)
+4. Build category routes (CRUD, admin only)
+5. Implement search/filter logic
+
+### **Phase 4: Shopping Cart** (Day 4)
+
+1. Create Cart model (userId, items[], createdAt, updatedAt)
+2. Build cart routes:
+   - POST `/cart/add`
+   - DELETE `/cart/items/{productId}`
+   - PUT `/cart/items/{productId}`
+   - GET `/cart`
+   - POST `/cart/clear`
+3. Implement cart calculation (subtotal, tax, shipping)
+
+### **Phase 5: Orders & Checkout** (Days 5-6)
+
+1. Create Order model (userId, items[], status, totalPrice, shippingAddress, paymentMethod, createdAt)
+2. Build checkout logic:
+   - Validate inventory before creating order
+   - Calculate final price with shipping address
+3. Build order routes:
+   - POST `/orders` (create order from cart)
+   - GET `/orders` (user's order history)
+   - GET `/orders/{id}`
+   - GET `/admin/orders` (admin view all)
+   - PUT `/admin/orders/{id}/status`
+4. Implement inventory reduction on order creation
+
+### **Phase 6: Payment Processing** (Days 6-7)
+
+1. Create Payment model (orderId, transactionId, method, status, amount, createdAt)
+2. Implement payment routes:
+   - POST `/payments/create-intent` (Stripe payment intent)
+   - POST `/payments/confirm`
+   - Webhook to handle payment callbacks
+3. Link payment to order (mark order as paid)
+
+### **Phase 7: Reviews, Ratings & Admin Analytics** (Days 7-8)
+
+1. Create Review model (productId, userId, rating, comment, createdAt)
+2. Build review routes:
+   - POST `/products/{id}/reviews`
+   - GET `/products/{id}/reviews`
+   - DELETE `/reviews/{id}`
+3. Update product model with avg rating calculation
+4. Build admin analytics routes:
+   - GET `/admin/analytics/revenue`
+   - GET `/admin/analytics/users`
+   - GET `/admin/analytics/inventory`
+
+### **Phase 8: Notifications (Email)** (Days 8-9)
+
+1. Set up email service (Nodemailer + Gmail)
+2. Create email templates (order confirmation, shipment, password reset)
+3. Implement email triggers:
+   - On successful registration
+   - On successful payment
+   - On order shipment
+   - On password reset request
+
+### **Phase 9: Testing, Validation & Deployment** (Days 9-10)
+
+1. Test all endpoints (Postman)
+2. Add input validation & error handling
+3. Add request rate limiting (express-rate-limit)
+4. Add logging (morgan)
+5. Set up environment-specific configs
+6. Deploy to Heroku/Railway
+
+---
+
+## Folder Structure
+
+backend/
+├── models/
+│ ├── User.js
+│ ├── Product.js
+│ ├── Category.js
+│ ├── Cart.js
+│ ├── Order.js
+│ ├── Payment.js
+│ └── Review.js
+├── routes/
+│ ├── auth.js
+│ ├── users.js
+│ ├── products.js
+│ ├── categories.js
+│ ├── cart.js
+│ ├── orders.js
+│ ├── payments.js
+│ ├── reviews.js
+│ └── admin.js
+├── controllers/
+│ ├── authController.js
+│ ├── userController.js
+│ ├── productController.js
+│ ├── cartController.js
+│ ├── orderController.js
+│ ├── paymentController.js
+│ └── adminController.js
+├── middleware/
+│ ├── auth.js (JWT verification)
+│ ├── errorHandler.js
+│ └── validation.js
+├── utils/
+│ ├── emailService.js (Nodemailer)
+│ ├── paymentService.js (Stripe)
+│ ├── validators.js
+│ └── constants.js
+├── config/
+│ ├── database.js
+│ └── environment.js
+├── .env
+├── .gitignore
+├── package.json
+└── server.js
+
+---
+
+## Verification Checklist
+
+- ✅ Server starts, MongoDB connects
+- ✅ Register/login works, JWT validates protected routes
+- ✅ Product CRUD works, search/filters work
+- ✅ Add/remove cart items, totals calculate correctly
+- ✅ Create order from cart, inventory decreases
+- ✅ Stripe payment intent created, webhook processes payments
+- ✅ Reviews saved, product ratings update
+- ✅ Admin analytics return data
+- ✅ Confirmation & shipment emails sent
+
+---
+
+## Summary
+
+- **Tech Stack**: Node.js + Express + MongoDB
+- **Auth**: JWT (stateless)
+- **Payment**: Stripe
+- **Notifications**: Email (Nodemailer + Gmail)
+- **Cart Storage**: Database (persistent)
+- **Features**: 9 core modules covering user auth, products, cart, orders, payments, inventory, reviews, admin, and notifications
+- **Timeline**: 9-10 days
+
+token
+{
+"name": "Admin User",
+"email": "admin@example.com",
+"password": "123456"
+}
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5ZTNiYTk5MzhiNDE0ZTU4ZjNkODExMSIsImlhdCI6MTc3NjU5MTE2NiwiZXhwIjoxNzc3MTk1OTY2fQ.Bhv-9x2X5bdh8EGTEFv2C59gqLAdHTULJEe9EbqH8i0
+
+features.......
+
+Phase 4: Shopping Cart with Variants & Guest Merge (Day 4)
+
+Shopping cart stores items with up to two optional variant options (e.g., Size and Color, both optional). Each item tracks quantity, priceAtAdd (for detecting price changes), and selectedOptions (option1Name/Value and option2Name/Value, both can be empty). Guest users store cart in browser localStorage before creating an account. Upon login, frontend sends localStorage cart to POST /api/cart/merge endpoint, which validates products, checks for duplicate product+variant combinations, merges quantities if same item exists, and saves final cart to user's database Cart model. After merge, localStorage is cleared and subsequent logins load cart from database. Cart APIs: GET /api/cart, POST /api/cart/add, PUT /api/cart/item/:id, DELETE /api/cart/item/:id, POST /api/cart/merge, POST /api/cart/clear. Price update detection shows "Price updated" if priceAtAdd differs from current product price at checkout.
+
+What To Build
+
+Revenue analytics
+User analytics
+Inventory analytics
+Shared dashboard summary cards
+Must-Have Analytics Features
+
+Revenue Analytics Features
+Total revenue
+Revenue today
+Revenue yesterday
+Revenue this month
+Revenue this year
+Paid orders count
+Average order value
+Revenue trend series by day, week, month, year
+Revenue by product
+Units sold by product
+Payment method split (COD vs Stripe)
+Optional: top categories by revenue
+User Analytics Features
+Total users
+New users today
+New users yesterday
+New users this month
+New users this year
+Signup trend by day, week, month
+Active buyers count (users with at least one paid order)
+Optional: repeat customers count
+Inventory Analytics Features
+Total products
+Total inventory units
+Out-of-stock products count
+Low-stock products count (threshold based)
+Low-stock product list
+Inventory value estimate
+Stock by category
+Since you now use variantStocks only: low stock should also detect low variant combinations, not just product-level
+Dashboard Cards Features
+Total sales
+Total orders
+Total users
+Total products
+Low stock count
+Pending orders count
+Failed payment count
+Routes To Add
+
+GET /api/admin/analytics/revenue
+GET /api/admin/analytics/users
+GET /api/admin/analytics/inventory
+Optional: GET /api/admin/analytics/summary
+All must be admin-protected with protect + admin middleware.
+
+Common Query Features For All Analytics Routes
+
+period: today, yesterday, 7d, 30d, mtd, ytd, custom
+startDate and endDate for custom range
+groupBy: hour, day, week, month, year
+compare: true or false for previous period comparison
+top: number for top lists
+lowStockThreshold for inventory route
+Backend Work Needed
+
+Create admin analytics controller
+getRevenueAnalytics
+getUserAnalytics
+getInventoryAnalytics
+optional getAnalyticsSummary
+Create admin analytics routes
+mount under /api/admin/analytics
+Aggregation pipelines
+Orders collection for revenue and product sales
+Users collection for signup trends
+Products collection for inventory + variantStocks analysis
+Performance and reliability
+Add indexes on paidAt, createdAt, items.productId
+Validate query params
+Return chart-ready response format
+Add pagination for long top lists
+Important For Your Current Inventory Design
+Because stock is now variantStocks-only, analytics logic should:
+
+Sum all variantStocks entries for total inventory units
+Flag low stock if any variant entry is below threshold
+Show low-stock variant combinations in response
+Suggested MVP Order
+
+Build summary + revenue basics first
+Add users analytics
+Add inventory analytics with variantStocks support
+Add compare mode and exports later
+If you want, I can implement the full admin analytics backend now with these 3 routes and chart-ready JSON responses.

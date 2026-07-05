@@ -1,0 +1,84 @@
+# Cart System with Two Optional Variants & Guest-to-User Merge
+
+## Feature Overview
+
+- Shopping cart with support for products that have up to two customizable variant options
+- Both variants are **optional** (not required)
+- Guest users store cart in localStorage
+- After login/account creation, guest cart merges into user account cart in database
+- Price tracking to detect and show price updates
+
+## Cart Item Structure
+
+Each cart item contains:
+
+```
+{
+  productId: ObjectId,
+  quantity: number (min 1),
+  priceAtAdd: number (snapshot price at time of add),
+  selectedOptions: {
+    option1Name: string (e.g., "Size"),
+    option1Value: string (e.g., "M"),
+    option2Name: string (e.g., "Color"),
+    option2Value: string (e.g., "Black")
+  }
+}
+```
+
+Both option names and values are **optional empty strings** if not selected.
+
+## Example Use Cases
+
+1. **T-Shirt**: Size (option1) + Color (option2)
+2. **Laptop**: Storage (option1) + RAM (option2)
+3. **Phone**: No variants → both options empty
+4. **Single option product**: Size (option1) + option2 empty
+
+## Guest → User Flow
+
+1. Guest adds items → stored in localStorage as array of cart items
+2. Guest creates account or logs in
+3. Frontend sends localStorage cart + auth token to `POST /api/cart/merge`
+4. Backend:
+   - Creates/loads user cart in database
+   - For each guest item:
+     - Validate product exists (still in stock)
+     - Check if same product + same options already in user cart
+     - If yes: increase quantity
+     - If no: add as new cart line
+   - Save merged cart to database
+5. Frontend clears localStorage
+6. Frontend loads cart from `GET /api/cart` (now server-side)
+7. Next login: cart items already in database, displayed automatically
+
+## Price Update Detection
+
+- `priceAtAdd` stores the price shown when user added item
+- At checkout (or when viewing cart), fetch current product price
+- If `currentPrice !== priceAtAdd`, show: "Price updated: was $X, now $Y"
+- Simple implementation: ~5-10 lines of code in cart view endpoint
+
+## APIs to Build (Phase 4)
+
+1. `GET /api/cart` - Get user's cart
+2. `POST /api/cart/add` - Add item (with optional variants)
+3. `PUT /api/cart/item/:itemId` - Update quantity/options
+4. `DELETE /api/cart/item/:itemId` - Remove item
+5. `POST /api/cart/merge` - Merge guest localStorage cart after login
+6. `POST /api/cart/clear` - Clear entire cart
+
+## Key Implementation Notes
+
+- Same product with different variants = different cart lines
+- Always validate product exists at checkout (priceAtAdd is just for display)
+- localStorage on frontend = array of cart items (no userId needed)
+- database Cart model = one per user (indexed by userId)
+- Merge logic should be idempotent (safe to call multiple times)
+
+## Future Enhancements (Not Phase 4)
+
+- More than 2 variants per product
+- Variant validation against admin-defined variant options
+- Quantity-based pricing tiers
+- Bundle/combo offers
