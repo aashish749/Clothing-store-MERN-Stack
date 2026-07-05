@@ -29,8 +29,7 @@ const ShopContextProvider = ({ children }) => {
 
   const fetchShippingSettings = async () => {
     try {
-      const apiBaseUrl =
-        import.meta.env.VITE_API_BASE_URL || "http://localhost:5050";
+      const apiBaseUrl = "https://clothing-store-mern-stack.vercel.app";
 
       const response = await axios.get(`${apiBaseUrl}/api/shipping`);
       const shipping = response.data?.shipping || {};
