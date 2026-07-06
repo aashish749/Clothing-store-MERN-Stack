@@ -7,7 +7,6 @@ import { assets } from "../assets/frontend_assets/assets";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 import { Range, getTrackBackground } from "react-range";
-
 const Collection = () => {
   const { products } = useContext(ShopContext);
   const [categories, setCategories] = useState([]);

@@ -2,6 +2,7 @@ import { useContext } from "react";
 import { ShopContext } from "../context";
 import Title from "./Title";
 import Card from "./Card";
+import SkeletonCard from "./SkeletonCard";
 
 const LatestCollection = () => {
   const { products } = useContext(ShopContext);
@@ -21,11 +22,15 @@ const LatestCollection = () => {
       sm:grid-cols-3: Tablets
       lg:grid-cols-5: Desktop (1024px+)
     */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        {latestProducts.map((product) => (
-          <Card key={product._id} product={product} />
-        ))}
-      </div>
+      {!latestProducts || latestProducts.length === 0 ? (
+        <SkeletonCard />
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          {latestProducts.map((product) => (
+            <Card key={product._id} product={product} />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
